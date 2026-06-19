@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Summary Results</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+<body>
+
+<div class="result-container">
+
+
+<div class="page-header">
+
+    <h1>📚 Smart Notes Summary</h1>
+
+    <p>
+        AI-generated summary and extracted keywords
+    </p>
+
+</div>
+
+<div class="action-buttons">
+
+    <a href="/download" class="download-btn">
+        ⬇ Download PDF
+    </a>
+
+    <a href="/" class="home-btn">
+        🏠 Back to Home
+    </a>
+
+    <a href="/logout" class="logout-btn">
+        🚪 Logout
+    </a>
+
+</div>
+
+<div class="card">
+
+    <h2>📝 Summary</h2>
+
+    <p>
+        {{ summary }}
+    </p>
+
+</div>
+
+<div class="card">
+
+    <h2>📌 Keywords</h2>
+
+    <div class="keywords-container">
+
+        {% for keyword in keywords %}
+            <span class="keyword-tag">
+                {{ keyword }}
+            </span>
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+</div>
+
+</body>
+
+</html>

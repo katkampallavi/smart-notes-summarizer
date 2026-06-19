@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Smart Notes Summarizer</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+
+<div class="hero">
+
+    <h1>📚 Smart Notes Summarizer</h1>
+
+    <p>
+        Transform lengthy documents into concise summaries using AI.
+        Upload PDF, DOCX, or PPTX files and instantly generate
+        summaries and keywords.
+    </p>
+
+</div>
+
+<div class="upload-card">
+
+    <form action="/upload"
+          method="POST"
+          enctype="multipart/form-data">
+
+        <label class="upload-label">
+            📄 Choose Document
+        </label>
+
+        <input
+            type="file"
+            name="pdf"
+            accept=".pdf,.docx,.pptx"
+            required>
+
+        <button type="submit">
+            🚀 Upload & Summarize
+        </button>
+
+    </form>
+
+</div>
+
+<div class="features">
+
+    <div class="feature-box">
+        🤖 AI Summary
+    </div>
+
+    <div class="feature-box">
+        📌 Keywords
+    </div>
+
+    <div class="feature-box">
+        📥 PDF Export
+    </div>
+
+</div>
+
+<a href="/logout" class="logout-btn">
+    🚪 Logout
+</a>
+
+
+</div>
+
+</body>
+
+</html>

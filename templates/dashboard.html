@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Dashboard - Smart Notes</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+<body>
+
+<div class="dashboard-container">
+
+
+<div class="dashboard-header">
+
+    <h1>📚 Smart Notes Dashboard</h1>
+
+    <p>
+        Welcome to your AI-powered study assistant
+    </p>
+
+</div>
+
+<div class="dashboard-cards">
+
+    <a href="/" class="dashboard-card">
+        <h2>📄 Upload Notes</h2>
+        <p>
+            Upload PDF, DOCX, or PPTX files and generate AI summaries.
+        </p>
+    </a>
+
+    <a href="/history" class="dashboard-card">
+        <h2>🕒 Summary History</h2>
+        <p>
+            View all your previously generated summaries.
+        </p>
+    </a>
+
+    <a href="/chatbot" class="dashboard-card">
+        <h2>🤖 AI Study Assistant</h2>
+        <p>
+            Chat with your study materials and get answers instantly.
+        </p>
+    </a>
+
+    <a href="/download" class="dashboard-card">
+        <h2>📥 Download Summary</h2>
+        <p>
+            Download your latest generated summary as PDF.
+        </p>
+    </a>
+
+</div>
+
+<div style="text-align:center; margin-top:30px;">
+
+    <a href="/logout" class="logout-btn">
+        🚪 Logout
+    </a>
+
+</div>
+
+
+</div>
+
+</body>
+
+</html>

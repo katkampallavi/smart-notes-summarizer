@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>AI Study Assistant</title>
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}">
+
+
+</head>
+
+<body>
+
+<div class="chat-container">
+
+
+<div class="chat-header">
+
+    <h1>🤖 AI Study Assistant</h1>
+
+    <p>
+        Ask questions about your uploaded notes and get instant answers.
+    </p>
+
+</div>
+
+<div class="chat-box">
+
+    <div class="bot-message">
+        👋 Hello! I'm your AI Study Assistant.
+        Ask me anything about your notes.
+    </div>
+
+</div>
+
+<form class="chat-form">
+
+    <input
+        type="text"
+        placeholder="💬 Ask a question..."
+        required>
+
+    <button type="submit">
+        Send
+    </button>
+
+</form>
+
+<div class="chat-actions">
+
+    <a href="/" class="home-btn">
+        🏠 Home
+    </a>
+
+    <a href="/history" class="download-btn">
+        📄 History
+    </a>
+
+    <a href="/logout" class="logout-btn">
+        🚪 Logout
+    </a>
+
+</div>
+
+
+</div>
+
+</body>
+
+</html>
