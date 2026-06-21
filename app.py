@@ -10,6 +10,7 @@ from utils.pdf_export import create_pdf
 from models.summarizer import generate_summary
 #from models.summarizer import generate_summary
 from models.keyword_extractor import extract_keywords
+import sqlite3
 
 app = Flask(__name__)
 app.secret_key = "smartnotes123"
@@ -66,6 +67,38 @@ def upload():
     summary = generate_summary(text)
 
     keywords = extract_keywords(text)
+
+    # Save summary history
+    conn = sqlite3.connect("database/smartnotes.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id FROM users WHERE email=?",
+        (session["user"],)
+    )
+
+    user = cursor.fetchone()
+
+    if user:
+
+        user_id = user[0]
+
+        cursor.execute(
+            """
+            INSERT INTO summaries
+            (user_id, filename, summary)
+            VALUES (?, ?, ?)
+            """,
+            (
+                user_id,
+                file.filename,
+                summary
+            )
+        )
+
+        conn.commit()
+
+    conn.close()
 
     create_pdf(summary)
 

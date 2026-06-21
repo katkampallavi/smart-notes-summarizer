@@ -12,6 +12,16 @@ CREATE TABLE users(
     password TEXT NOT NULL
 )
 """)
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS summaries(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    filename TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+)
+""")
 
 conn.commit()
 conn.close()
