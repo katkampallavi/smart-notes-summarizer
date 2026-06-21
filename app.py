@@ -163,6 +163,33 @@ def download():
         "static/downloads/summary.pdf",
         as_attachment=True
     )
+@app.route("/history")
+def history():
 
+    if "user" not in session:
+        return redirect("/login")
+
+    conn = sqlite3.connect("database/smartnotes.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT filename, summary, created_at
+        FROM summaries s
+        JOIN users u ON s.user_id = u.id
+        WHERE u.email = ?
+        ORDER BY created_at DESC
+        """,
+        (session["user"],)
+    )
+
+    summaries = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "history.html",
+        summaries=summaries
+    )
 if __name__ == "__main__":
     app.run(debug=True)

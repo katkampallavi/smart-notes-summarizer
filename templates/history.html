@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summary History</title>
 
-<title>Summary History</title>
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}">
-
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 
 </head>
 
@@ -20,63 +17,67 @@
 
 <div class="result-container">
 
+    <div class="page-header">
 
-<div class="page-header">
-
-    <h1>📚 Summary History</h1>
-
-    <p>
-        View all previously generated summaries
-    </p>
-
-</div>
-
-<div class="action-buttons">
-
-    <a href="/" class="home-btn">
-        🏠 Back to Home
-    </a>
-
-    <a href="/logout" class="logout-btn">
-        🚪 Logout
-    </a>
-
-</div>
-
-<div class="card">
-
-    <h2>📄 Previous Summaries</h2>
-
-    {% if summaries %}
-
-        <div class="history-list">
-
-            {% for item in summaries %}
-
-                <div class="history-item">
-
-                    <h3>📌 Summary {{ loop.index }}</h3>
-
-                    <p>
-                        {{ item }}
-                    </p>
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-    {% else %}
+        <h1>📚 Summary History</h1>
 
         <p>
-            No summaries available yet.
+            View all previously generated summaries
         </p>
 
-    {% endif %}
+    </div>
 
-</div>
+    <div class="action-buttons">
 
+        <a href="/" class="home-btn">
+            🏠 Back to Home
+        </a>
+
+        <a href="/logout" class="logout-btn">
+            🚪 Logout
+        </a>
+
+    </div>
+
+    <div class="card">
+
+        <h2>📄 Previous Summaries</h2>
+
+        {% if summaries %}
+
+            <div class="history-list">
+
+                {% for item in summaries %}
+
+                    <div class="history-item">
+
+                        <h3>📌 {{ item[0] }}</h3>
+
+                        <p>
+                            {{ item[1] }}
+                        </p>
+
+                        <small>
+                            🕒 Generated on: {{ item[2] }}
+                        </small>
+
+                        <hr>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p>
+                No summaries available yet.
+            </p>
+
+        {% endif %}
+
+    </div>
 
 </div>
 
