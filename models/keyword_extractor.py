@@ -1,22 +1,18 @@
-from keybert import KeyBERT
-
-kw_model = KeyBERT()
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 def extract_keywords(text):
 
-    results = kw_model.extract_keywords(
-        text,
-        keyphrase_ngram_range=(1, 2),
+    vectorizer = TfidfVectorizer(
         stop_words="english",
-        top_n=20,
-        use_mmr=True,
-        diversity=0.8
+        max_features=10
     )
 
-    unique_keywords = []
+    try:
+        X = vectorizer.fit_transform([text])
 
-    for keyword, score in results:
-        if keyword not in unique_keywords:
-            unique_keywords.append(keyword)
+        keywords = vectorizer.get_feature_names_out()
 
-    return unique_keywords[:10]
+        return list(keywords)
+
+    except:
+        return []
