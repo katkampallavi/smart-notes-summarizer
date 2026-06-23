@@ -1,85 +1,287 @@
 <!DOCTYPE html>
-
+<!--
+  Smart Notes Summarizer — index.html
+  Upload page (main app home)
+-->
 <html lang="en">
-
 <head>
-
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Smart Notes Summarizer</title>
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Notes Summarizer — Upload</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <!-- Iconify for icons -->
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" defer></script>
 </head>
-
 <body>
 
-<div class="container">
+<!-- ── Mobile Sidebar Toggle ── -->
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+  <iconify-icon icon="lucide:menu"></iconify-icon>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+<div class="app-shell">
 
-<div class="hero">
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
 
-    <h1>📚 Smart Notes Summarizer</h1>
-
-    <p>
-        Transform lengthy documents into concise summaries using AI.
-        Upload PDF, DOCX, or PPTX files and instantly generate
-        summaries and keywords.
-    </p>
-
-</div>
-
-<div class="upload-card">
-
-    <form action="/upload"
-          method="POST"
-          enctype="multipart/form-data">
-
-        <label class="upload-label">
-            📄 Choose Document
-        </label>
-
-        <input
-            type="file"
-            name="pdf"
-            accept=".pdf,.docx,.pptx"
-            required>
-
-        <button type="submit">
-            🚀 Upload & Summarize
-        </button>
-
-    </form>
-
-</div>
-
-<div class="features">
-
-    <div class="feature-box">
-        🤖 AI Summary
+    <div class="sidebar-logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">
+        Smart Notes
+        <span>AI Summarizer</span>
+      </div>
     </div>
 
-    <div class="feature-box">
-        📌 Keywords
+    <p class="nav-section-label">Main</p>
+    <nav>
+      <a href="{{ url_for('upload') }}" class="nav-link active">
+        <span class="nav-icon"><iconify-icon icon="lucide:upload-cloud"></iconify-icon></span>
+        Upload Document
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span>
+        Dashboard
+      </a>
+    </nav>
+
+    <p class="nav-section-label" style="margin-top:20px;">Library</p>
+    <nav>
+      <a href="{{ url_for('history') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:history"></iconify-icon></span>
+        Summary History
+      </a>
+      <a href="{{ url_for('chatbot') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:bot"></iconify-icon></span>
+        AI Study Assistant
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        {{ current_user.username[0].upper() if current_user.is_authenticated else 'U' }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.username if current_user.is_authenticated else 'User' }}</div>
+        <div class="user-role">Free Plan</div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Log out">
+        <iconify-icon icon="lucide:log-out"></iconify-icon>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main-content fade-in">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <h1>Upload Document</h1>
+        <p>Upload a PDF, DOCX, or PPTX file to generate an AI-powered summary.</p>
+      </div>
+      <div class="topbar-actions">
+        <a href="{{ url_for('history') }}" class="btn btn-secondary btn-sm">
+          <iconify-icon icon="lucide:history"></iconify-icon>
+          View History
+        </a>
+      </div>
     </div>
 
-    <div class="feature-box">
-        📥 PDF Export
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'error' if category == 'danger' else 'info' }}">
+            <iconify-icon icon="{{ 'lucide:check-circle' if category == 'success' else 'lucide:alert-circle' }}"></iconify-icon>
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- ── Upload Card ── -->
+    <div class="card" style="max-width:680px; margin: 0 auto;">
+
+      <form method="POST" action="{{ url_for('upload') }}" enctype="multipart/form-data" id="uploadForm">
+
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" name="file" id="fileInput" accept=".pdf,.docx,.pptx" required />
+
+          <div class="upload-icon" id="uploadIcon">📄</div>
+          <h3 id="uploadTitle">Drop your document here</h3>
+          <p id="uploadSubtitle">or click to browse your files</p>
+
+          <div class="file-types">
+            <span class="file-badge pdf">PDF</span>
+            <span class="file-badge docx">DOCX</span>
+            <span class="file-badge pptx">PPTX</span>
+          </div>
+        </div>
+
+        <!-- Selected file preview -->
+        <div id="filePreview" style="display:none; margin-top:20px;">
+          <div class="card card-sm" style="background:rgba(124,58,237,0.08); border-color:rgba(124,58,237,0.3);">
+            <div class="flex items-center gap-3">
+              <div class="stat-icon violet" style="width:38px;height:38px;">
+                <iconify-icon icon="lucide:file-text"></iconify-icon>
+              </div>
+              <div style="flex:1; min-width:0;">
+                <div id="previewName" class="truncate" style="font-size:0.875rem; font-weight:600;"></div>
+                <div id="previewSize" style="font-size:0.75rem; color:var(--text-muted);"></div>
+              </div>
+              <button type="button" class="btn-icon" id="clearFile" title="Remove file">
+                <iconify-icon icon="lucide:x"></iconify-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <button type="submit" class="btn btn-primary btn-lg w-full" id="submitBtn">
+            <iconify-icon icon="lucide:sparkles"></iconify-icon>
+            <span class="btn-label">Generate AI Summary</span>
+          </button>
+        </div>
+
+        <!-- Progress bar (shown on submit) -->
+        <div id="progressWrap" style="display:none; margin-top:16px;">
+          <div class="flex justify-between" style="margin-bottom:8px;">
+            <span style="font-size:0.8rem; color:var(--text-secondary);">Processing your document…</span>
+            <span id="progressPct" style="font-size:0.8rem; color:var(--violet-light);">0%</span>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="progressBar" style="width:0%;"></div>
+          </div>
+        </div>
+
+      </form>
     </div>
 
-</div>
+    <!-- ── How it works ── -->
+    <div style="margin-top:40px;">
+      <h2 style="font-size:1rem; font-weight:600; margin-bottom:20px; color:var(--text-secondary);">How it works</h2>
+      <div class="quick-actions">
 
-<a href="/logout" class="logout-btn">
-    🚪 Logout
-</a>
+        <div class="quick-action-card" style="cursor:default;">
+          <div class="quick-action-icon violet" style="background:var(--violet-dim); color:var(--violet-light);">
+            <iconify-icon icon="lucide:upload"></iconify-icon>
+          </div>
+          <h3>1. Upload</h3>
+          <p>Drop a PDF, DOCX, or PPTX — up to any size your notes come in.</p>
+        </div>
 
+        <div class="quick-action-card" style="cursor:default;">
+          <div class="quick-action-icon" style="background:rgba(59,130,246,0.15); color:#93C5FD;">
+            <iconify-icon icon="lucide:brain"></iconify-icon>
+          </div>
+          <h3>2. AI Analysis</h3>
+          <p>Our NLP engine reads, comprehends, and distils your content instantly.</p>
+        </div>
 
-</div>
+        <div class="quick-action-card" style="cursor:default;">
+          <div class="quick-action-icon" style="background:var(--mint-dim); color:#6EE7B7;">
+            <iconify-icon icon="lucide:list-checks"></iconify-icon>
+          </div>
+          <h3>3. Get Summary</h3>
+          <p>Receive a structured summary, extracted keywords, and a PDF download.</p>
+        </div>
 
+        <div class="quick-action-card" style="cursor:default;">
+          <div class="quick-action-icon" style="background:rgba(245,158,11,0.12); color:#FCD34D;">
+            <iconify-icon icon="lucide:bot"></iconify-icon>
+          </div>
+          <h3>4. Chat & Study</h3>
+          <p>Ask our AI Study Assistant follow-up questions on any topic.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div><!-- /app-shell -->
+
+<script>
+  /* ── Sidebar toggle ── */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+
+  /* ── File input ── */
+  const fileInput  = document.getElementById('fileInput');
+  const uploadZone = document.getElementById('uploadZone');
+  const filePreview= document.getElementById('filePreview');
+  const previewName= document.getElementById('previewName');
+  const previewSize= document.getElementById('previewSize');
+  const uploadIcon = document.getElementById('uploadIcon');
+  const uploadTitle= document.getElementById('uploadTitle');
+
+  function humanSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/(1024*1024)).toFixed(2) + ' MB';
+  }
+
+  function showPreview(file) {
+    previewName.textContent = file.name;
+    previewSize.textContent = humanSize(file.size);
+    filePreview.style.display = 'block';
+    uploadTitle.textContent = 'File selected';
+    uploadIcon.textContent = '✅';
+  }
+
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) showPreview(fileInput.files[0]);
+  });
+
+  document.getElementById('clearFile').addEventListener('click', () => {
+    fileInput.value = '';
+    filePreview.style.display = 'none';
+    uploadTitle.textContent = 'Drop your document here';
+    uploadIcon.textContent = '📄';
+  });
+
+  /* Drag-over styling */
+  ['dragenter','dragover'].forEach(e => uploadZone.addEventListener(e, ev => {
+    ev.preventDefault(); uploadZone.classList.add('drag-over');
+  }));
+  ['dragleave','drop'].forEach(e => uploadZone.addEventListener(e, ev => {
+    ev.preventDefault(); uploadZone.classList.remove('drag-over');
+    if (e === 'drop' && ev.dataTransfer.files[0]) {
+      fileInput.files = ev.dataTransfer.files;
+      showPreview(ev.dataTransfer.files[0]);
+    }
+  }));
+
+  /* ── Submit progress animation ── */
+  document.getElementById('uploadForm').addEventListener('submit', function(e) {
+    if (!fileInput.files[0]) return;
+    const wrap = document.getElementById('progressWrap');
+    const bar  = document.getElementById('progressBar');
+    const pct  = document.getElementById('progressPct');
+    const btn  = document.getElementById('submitBtn');
+
+    wrap.style.display = 'block';
+    btn.disabled = true;
+    btn.querySelector('.btn-label').textContent = 'Processing…';
+
+    let p = 0;
+    const iv = setInterval(() => {
+      p += Math.random() * 12;
+      if (p > 92) p = 92;
+      bar.style.width = p + '%';
+      pct.textContent = Math.round(p) + '%';
+    }, 300);
+  });
+</script>
 </body>
-
 </html>

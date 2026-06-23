@@ -1,56 +1,180 @@
 <!DOCTYPE html>
-
+<!--
+  Smart Notes Summarizer — login.html
+-->
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Notes Login</title>
-
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/auth.css') }}">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — Smart Notes Summarizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" defer></script>
 </head>
-
 <body>
 
-<div class="auth-container">
+<div class="auth-page">
 
+  <!-- ══ PROMO PANEL ══ -->
+  <div class="auth-promo">
 
-<h1>📚 Smart Notes</h1>
+    <div class="promo-logo">
+      <div class="logo-mark">🧠</div>
+      <div class="logo-name">
+        Smart Notes
+        <span>AI Summarizer</span>
+      </div>
+    </div>
 
-<p class="subtitle">
-    Login to access AI-powered note summarization
-</p>
+    <h1 class="promo-headline">
+      Study smarter,<br>
+      not <span class="accent">harder.</span>
+    </h1>
 
-<form method="POST">
+    <p class="promo-subtitle">
+      Upload any document and let our AI distil the most important insights in seconds. Save hours, retain more.
+    </p>
 
-    <input
-        type="email"
-        name="email"
-        placeholder="📧 Enter your Email"
-        required>
+    <div class="promo-features">
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>Instant AI-powered summaries from PDF, DOCX & PPTX</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>Smart keyword extraction for rapid review</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>AI Study Assistant chatbot for follow-up questions</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>One-click PDF summary download & full history</p>
+      </div>
+    </div>
 
-    <input
-        type="password"
-        name="password"
-        placeholder="🔒 Enter your Password"
-        required>
+    <div class="promo-testimonial">
+      <p class="testimonial-text">
+        "Smart Notes cut my exam prep time in half. I can process an entire lecture series in minutes and actually remember what matters."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar">A</div>
+        <div>
+          <div class="testimonial-name">Alex Chen</div>
+          <div class="testimonial-role">Computer Science Student, MIT</div>
+        </div>
+      </div>
+    </div>
 
-    <button type="submit">
-        Login
-    </button>
+  </div>
 
-</form>
+  <!-- ══ FORM PANEL ══ -->
+  <div class="auth-form-panel">
+    <div class="auth-form-container">
 
-<p>
-    Don't have an account?
-    <a href="/register">Register</a>
-</p>
+      <div class="auth-header">
+        <div class="step-label">Welcome back</div>
+        <h2>Sign in to your account</h2>
+        <p>Pick up where you left off with your notes.</p>
+      </div>
 
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg flash-{{ 'success' if category == 'success' else 'error' if category == 'danger' else 'info' }}">
+              <iconify-icon icon="{{ 'lucide:check-circle' if category == 'success' else 'lucide:alert-circle' }}"></iconify-icon>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
-</div>
+      <form method="POST" action="{{ url_for('login') }}" id="loginForm" novalidate>
 
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              placeholder="your_username"
+              required
+              autocomplete="username"
+              value="{{ request.form.get('username', '') }}"
+            />
+            <iconify-icon icon="lucide:user" class="input-icon"></iconify-icon>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">
+            Password
+            <a href="#" style="float:right; font-size:0.75rem; color:var(--violet-light); font-weight:500;">Forgot password?</a>
+          </label>
+          <div class="input-with-icon">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control has-right"
+              placeholder="••••••••"
+              required
+              autocomplete="current-password"
+            />
+            <iconify-icon icon="lucide:lock" class="input-icon"></iconify-icon>
+            <iconify-icon icon="lucide:eye" class="input-icon right" id="togglePwd"></iconify-icon>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:0.85rem; color:var(--text-secondary);">
+            <input type="checkbox" name="remember" style="accent-color:var(--violet); width:15px; height:15px;" />
+            Remember me for 30 days
+          </label>
+        </div>
+
+        <button type="submit" class="btn-auth" id="loginBtn">
+          <div class="btn-loader"></div>
+          <span class="btn-text">Sign In</span>
+          <iconify-icon icon="lucide:arrow-right"></iconify-icon>
+        </button>
+
+      </form>
+
+      <div class="auth-switch">
+        Don't have an account?
+        <a href="{{ url_for('register') }}">Create one free →</a>
+      </div>
+
+      <div class="auth-terms">
+        By signing in you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /auth-page -->
+
+<script>
+  /* Password visibility toggle */
+  const pwd    = document.getElementById('password');
+  const toggle = document.getElementById('togglePwd');
+  toggle.addEventListener('click', () => {
+    const show = pwd.type === 'password';
+    pwd.type = show ? 'text' : 'password';
+    toggle.setAttribute('icon', show ? 'lucide:eye-off' : 'lucide:eye');
+  });
+
+  /* Loading state on submit */
+  document.getElementById('loginForm').addEventListener('submit', function() {
+    const btn = document.getElementById('loginBtn');
+    btn.classList.add('loading');
+    btn.querySelector('.btn-text').textContent = 'Signing in…';
+  });
+</script>
 </body>
 </html>

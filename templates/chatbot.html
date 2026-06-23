@@ -1,77 +1,346 @@
 <!DOCTYPE html>
-
+<!--
+  Smart Notes Summarizer — chatbot.html
+  AI Study Assistant chat interface
+-->
 <html lang="en">
-
 <head>
-
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AI Study Assistant</title>
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Assistant — Smart Notes Summarizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" defer></script>
 </head>
-
 <body>
 
-<div class="chat-container">
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+  <iconify-icon icon="lucide:menu"></iconify-icon>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+<div class="app-shell">
 
-<div class="chat-header">
-
-    <h1>🤖 AI Study Assistant</h1>
-
-    <p>
-        Ask questions about your uploaded notes and get instant answers.
-    </p>
-
-</div>
-
-<div class="chat-box">
-
-    <div class="bot-message">
-        👋 Hello! I'm your AI Study Assistant.
-        Ask me anything about your notes.
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">Smart Notes<span>AI Summarizer</span></div>
     </div>
 
+    <p class="nav-section-label">Main</p>
+    <nav>
+      <a href="{{ url_for('upload') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:upload-cloud"></iconify-icon></span>
+        Upload Document
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span>
+        Dashboard
+      </a>
+    </nav>
+
+    <p class="nav-section-label" style="margin-top:20px;">Library</p>
+    <nav>
+      <a href="{{ url_for('history') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:history"></iconify-icon></span>
+        Summary History
+      </a>
+      <a href="{{ url_for('chatbot') }}" class="nav-link active">
+        <span class="nav-icon"><iconify-icon icon="lucide:bot"></iconify-icon></span>
+        AI Study Assistant
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        {{ current_user.username[0].upper() if current_user.is_authenticated else 'U' }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.username if current_user.is_authenticated else 'User' }}</div>
+        <div class="user-role">Free Plan</div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Log out">
+        <iconify-icon icon="lucide:log-out"></iconify-icon>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main-content fade-in" style="display:flex; flex-direction:column; height:100vh; padding-bottom:0;">
+
+    <!-- Top Bar -->
+    <div class="topbar" style="flex-shrink:0; padding-bottom:0; margin-bottom:20px;">
+      <div class="topbar-title">
+        <h1>AI Study Assistant</h1>
+        <p>Ask anything — concepts, definitions, study tips, or follow-up questions about your documents.</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" id="clearChat">
+          <iconify-icon icon="lucide:refresh-ccw"></iconify-icon>
+          Clear Chat
+        </button>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary btn-sm">
+          <iconify-icon icon="lucide:plus"></iconify-icon>
+          New Summary
+        </a>
+      </div>
+    </div>
+
+    <!-- ── Chat Shell ── -->
+    <div class="chat-shell" style="flex:1;">
+
+      <!-- Messages area -->
+      <div class="chat-messages" id="chatMessages">
+
+        <!-- Welcome / intro bubble -->
+        <div class="chat-bubble ai">
+          <div class="flex items-center gap-2" style="margin-bottom:8px;">
+            <span style="font-size:1.1rem;">🤖</span>
+            <strong style="font-size:0.85rem; color:var(--violet-light);">Smart Notes AI</strong>
+          </div>
+          Hi there! I'm your AI Study Assistant. I can help you with:<br><br>
+          📚 Explaining concepts from your summarized documents<br>
+          🔍 Answering study questions on any subject<br>
+          ✍️ Breaking down complex ideas into simple terms<br>
+          📝 Creating practice questions for exam prep<br><br>
+          What would you like to explore today?
+          <div class="bubble-meta">Just now</div>
+        </div>
+
+        <!-- Suggested prompts -->
+        <div id="suggestedPrompts" style="display:flex; flex-wrap:wrap; gap:8px; align-self:flex-start; max-width:72%;">
+          <button class="tag" style="cursor:pointer;" onclick="usePrompt(this)">Explain machine learning</button>
+          <button class="tag" style="cursor:pointer;" onclick="usePrompt(this)">Summarize my last document</button>
+          <button class="tag" style="cursor:pointer;" onclick="usePrompt(this)">Create 5 practice questions</button>
+          <button class="tag" style="cursor:pointer;" onclick="usePrompt(this)">What are the key concepts?</button>
+        </div>
+
+        <!-- Dynamically injected messages land here -->
+
+        <!-- Previous conversation history if passed from backend -->
+        {% if chat_history %}
+          {% for msg in chat_history %}
+          <div class="chat-bubble {{ 'user' if msg.role == 'user' else 'ai' }}">
+            {% if msg.role == 'ai' %}
+            <div class="flex items-center gap-2" style="margin-bottom:6px;">
+              <span style="font-size:0.9rem;">🤖</span>
+              <strong style="font-size:0.82rem; color:var(--violet-light);">Smart Notes AI</strong>
+            </div>
+            {% endif %}
+            {{ msg.content }}
+            <div class="bubble-meta">{{ msg.timestamp if msg.timestamp else '' }}</div>
+          </div>
+          {% endfor %}
+        {% endif %}
+
+      </div>
+
+      <!-- Input area -->
+      <div class="chat-input-area">
+
+        <div style="flex:1; position:relative;">
+          <textarea
+            id="chatInput"
+            placeholder="Ask anything about your notes or any study topic…"
+            rows="1"
+            maxlength="1000"
+          ></textarea>
+        </div>
+
+        <button class="chat-send-btn" id="sendBtn" title="Send message" aria-label="Send message">
+          <iconify-icon icon="lucide:send"></iconify-icon>
+        </button>
+
+      </div>
+    </div><!-- /chat-shell -->
+
+  </main>
 </div>
 
-<form class="chat-form">
+<script>
+  /* Sidebar */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    sidebar.classList.toggle('open'); overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open'); overlay.classList.remove('active');
+  });
 
-    <input
-        type="text"
-        placeholder="💬 Ask a question..."
-        required>
+  /* Chat references */
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput    = document.getElementById('chatInput');
+  const sendBtn      = document.getElementById('sendBtn');
 
-    <button type="submit">
-        Send
-    </button>
+  /* Auto-expand textarea */
+  chatInput.addEventListener('input', () => {
+    chatInput.style.height = 'auto';
+    chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+  });
 
-</form>
+  /* Send on Enter (Shift+Enter = newline) */
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
 
-<div class="chat-actions">
+  sendBtn.addEventListener('click', sendMessage);
 
-    <a href="/" class="home-btn">
-        🏠 Home
-    </a>
+  /* Suggested prompt chips */
+  function usePrompt(el) {
+    chatInput.value = el.textContent;
+    chatInput.focus();
+    document.getElementById('suggestedPrompts').style.display = 'none';
+  }
 
-    <a href="/history" class="download-btn">
-        📄 History
-    </a>
+  /* Helpers */
+  function scrollBottom() {
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
-    <a href="/logout" class="logout-btn">
-        🚪 Logout
-    </a>
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+  }
 
-</div>
+  function appendBubble(role, text) {
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-bubble ' + role;
 
+    if (role === 'ai') {
+      wrap.innerHTML = `
+        <div class="flex items-center gap-2" style="margin-bottom:6px;">
+          <span style="font-size:0.9rem;">🤖</span>
+          <strong style="font-size:0.82rem; color:var(--violet-light);">Smart Notes AI</strong>
+        </div>
+        <span class="bubble-content"></span>
+        <div class="bubble-meta">${getTime()}</div>
+      `;
+    } else {
+      wrap.innerHTML = `
+        <span class="bubble-content">${escapeHtml(text)}</span>
+        <div class="bubble-meta">${getTime()}</div>
+      `;
+    }
 
-</div>
+    chatMessages.appendChild(wrap);
+    scrollBottom();
+    return wrap;
+  }
 
+  function appendTyping() {
+    const ind = document.createElement('div');
+    ind.className = 'typing-indicator';
+    ind.id = 'typingIndicator';
+    ind.innerHTML = `
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    `;
+    chatMessages.appendChild(ind);
+    scrollBottom();
+    return ind;
+  }
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+  }
+
+  /* Main send function — POSTs to Flask backend */
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    /* Hide suggestions */
+    const suggestions = document.getElementById('suggestedPrompts');
+    if (suggestions) suggestions.style.display = 'none';
+
+    /* User bubble */
+    appendBubble('user', text);
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+
+    /* Disable input */
+    chatInput.disabled = true;
+    sendBtn.disabled   = true;
+
+    /* Typing indicator */
+    const typing = appendTyping();
+
+    /* POST to Flask chatbot route */
+    fetch("{{ url_for('chatbot') }}", {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ message: text })
+    })
+    .then(r => r.json())
+    .then(data => {
+      typing.remove();
+
+      const aiBubble   = appendBubble('ai', '');
+      const contentEl  = aiBubble.querySelector('.bubble-content');
+      const reply      = data.response || data.message || 'I couldn\'t generate a response. Please try again.';
+
+      /* Typewriter effect */
+      let i = 0;
+      const speed = 15; // ms per char
+      function typeChar() {
+        if (i < reply.length) {
+          contentEl.innerHTML = escapeHtml(reply.slice(0, i+1));
+          i++;
+          scrollBottom();
+          setTimeout(typeChar, speed);
+        }
+      }
+      typeChar();
+    })
+    .catch(() => {
+      typing.remove();
+      const err = appendBubble('ai', '');
+      err.querySelector('.bubble-content').innerHTML =
+        '⚠️ Something went wrong. Please check your connection and try again.';
+    })
+    .finally(() => {
+      chatInput.disabled = false;
+      sendBtn.disabled   = false;
+      chatInput.focus();
+    });
+  }
+
+  /* Clear chat */
+  document.getElementById('clearChat').addEventListener('click', () => {
+    if (!confirm('Clear the entire conversation?')) return;
+    /* Keep only the welcome bubble and suggestions */
+    const bubbles = chatMessages.querySelectorAll('.chat-bubble:not(:first-child), .typing-indicator');
+    bubbles.forEach(b => b.remove());
+    const s = document.getElementById('suggestedPrompts');
+    if (!s) {
+      /* Re-create suggestion chips */
+      const prompts = ['Explain machine learning','Summarize my last document','Create 5 practice questions','What are the key concepts?'];
+      const wrap = document.createElement('div');
+      wrap.id = 'suggestedPrompts';
+      wrap.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-self:flex-start;max-width:72%;';
+      prompts.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'tag';
+        btn.style.cursor = 'pointer';
+        btn.textContent = p;
+        btn.setAttribute('onclick','usePrompt(this)');
+        wrap.appendChild(btn);
+      });
+      chatMessages.appendChild(wrap);
+    } else {
+      s.style.display = 'flex';
+    }
+  });
+
+  /* Scroll to bottom on load */
+  scrollBottom();
+</script>
 </body>
-
 </html>

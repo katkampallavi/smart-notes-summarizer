@@ -1,64 +1,270 @@
 <!DOCTYPE html>
-
+<!--
+  Smart Notes Summarizer — register.html
+-->
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Smart Notes</title>
-
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/auth.css') }}">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — Smart Notes Summarizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" defer></script>
 </head>
-
 <body>
 
-<div class="auth-container">
+<div class="auth-page">
 
+  <!-- ══ PROMO PANEL ══ -->
+  <div class="auth-promo">
 
-<h1>📝 Create Account</h1>
+    <div class="promo-logo">
+      <div class="logo-mark">🧠</div>
+      <div class="logo-name">
+        Smart Notes
+        <span>AI Summarizer</span>
+      </div>
+    </div>
 
-<p class="subtitle">
-    Join Smart Notes and start generating AI-powered summaries
-</p>
+    <h1 class="promo-headline">
+      Your AI<br>
+      study partner <span class="accent">starts here.</span>
+    </h1>
 
-<form method="POST">
+    <p class="promo-subtitle">
+      Join thousands of students and professionals who use Smart Notes to summarize, study, and retain knowledge faster than ever.
+    </p>
 
-    <input
-        type="text"
-        name="username"
-        placeholder="👤 Enter Username"
-        required>
+    <div class="promo-features">
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>Free to start — no credit card required</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>AI summaries in under 10 seconds</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>Full summary history with search & delete</p>
+      </div>
+      <div class="promo-feature">
+        <div class="feature-check">✓</div>
+        <p>Dashboard with personal usage statistics</p>
+      </div>
+    </div>
 
-    <input
-        type="email"
-        name="email"
-        placeholder="📧 Enter Email"
-        required>
+    <div class="promo-testimonial">
+      <p class="testimonial-text">
+        "I uploaded my 80-page thesis draft and got a clean, accurate summary in seconds. The keyword extraction alone is worth it."
+      </p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10B981,#3B82F6);">S</div>
+        <div>
+          <div class="testimonial-name">Sara Okonkwo</div>
+          <div class="testimonial-role">PhD Candidate, Oxford University</div>
+        </div>
+      </div>
+    </div>
 
-    <input
-        type="password"
-        name="password"
-        placeholder="🔒 Create Password"
-        required>
+  </div>
 
-    <button type="submit">
-        Create Account
-    </button>
+  <!-- ══ FORM PANEL ══ -->
+  <div class="auth-form-panel">
+    <div class="auth-form-container">
 
-</form>
+      <div class="auth-header">
+        <div class="step-label">Get started — it's free</div>
+        <h2>Create your account</h2>
+        <p>Start summarizing documents in under a minute.</p>
+      </div>
 
-<p>
-    Already have an account?
-    <a href="/login">Login</a>
-</p>
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash-msg flash-{{ 'success' if category == 'success' else 'error' if category == 'danger' else 'info' }}">
+              <iconify-icon icon="{{ 'lucide:check-circle' if category == 'success' else 'lucide:alert-circle' }}"></iconify-icon>
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
+      <form method="POST" action="{{ url_for('register') }}" id="registerForm" novalidate>
 
-</div>
+        <div class="form-group">
+          <label class="form-label" for="username">Username</label>
+          <div class="input-with-icon">
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              placeholder="choose_a_username"
+              required
+              autocomplete="username"
+              minlength="3"
+              value="{{ request.form.get('username', '') }}"
+            />
+            <iconify-icon icon="lucide:user" class="input-icon"></iconify-icon>
+          </div>
+          <div class="form-hint">At least 3 characters, letters and numbers only.</div>
+        </div>
 
+        <div class="form-group">
+          <label class="form-label" for="email">Email address</label>
+          <div class="input-with-icon">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-control"
+              placeholder="you@example.com"
+              required
+              autocomplete="email"
+              value="{{ request.form.get('email', '') }}"
+            />
+            <iconify-icon icon="lucide:mail" class="input-icon"></iconify-icon>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-with-icon">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control has-right"
+              placeholder="Create a strong password"
+              required
+              autocomplete="new-password"
+              minlength="6"
+            />
+            <iconify-icon icon="lucide:lock" class="input-icon"></iconify-icon>
+            <iconify-icon icon="lucide:eye" class="input-icon right" id="togglePwd"></iconify-icon>
+          </div>
+          <!-- Password strength meter -->
+          <div class="password-strength" id="strengthMeter" style="display:none;">
+            <div class="strength-bar">
+              <div class="strength-segment" id="s1"></div>
+              <div class="strength-segment" id="s2"></div>
+              <div class="strength-segment" id="s3"></div>
+              <div class="strength-segment" id="s4"></div>
+            </div>
+            <span class="strength-label" id="strengthLabel">Weak</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="confirm_password">Confirm password</label>
+          <div class="input-with-icon">
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              class="form-control has-right"
+              placeholder="Repeat your password"
+              required
+              autocomplete="new-password"
+            />
+            <iconify-icon icon="lucide:lock" class="input-icon"></iconify-icon>
+            <iconify-icon icon="lucide:eye" class="input-icon right" id="toggleConfirm"></iconify-icon>
+          </div>
+          <div class="form-error" id="matchError" style="display:none;">
+            <iconify-icon icon="lucide:x-circle"></iconify-icon>
+            Passwords don't match.
+          </div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="registerBtn">
+          <div class="btn-loader"></div>
+          <span class="btn-text">Create Account</span>
+          <iconify-icon icon="lucide:arrow-right"></iconify-icon>
+        </button>
+
+      </form>
+
+      <div class="auth-switch">
+        Already have an account?
+        <a href="{{ url_for('login') }}">Sign in →</a>
+      </div>
+
+      <div class="auth-terms">
+        By creating an account you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /auth-page -->
+
+<script>
+  /* Password toggle */
+  function makeToggle(inputId, toggleId) {
+    const inp = document.getElementById(inputId);
+    const btn = document.getElementById(toggleId);
+    btn.addEventListener('click', () => {
+      const show = inp.type === 'password';
+      inp.type = show ? 'text' : 'password';
+      btn.setAttribute('icon', show ? 'lucide:eye-off' : 'lucide:eye');
+    });
+  }
+  makeToggle('password', 'togglePwd');
+  makeToggle('confirm_password', 'toggleConfirm');
+
+  /* Password strength */
+  const pwdInput = document.getElementById('password');
+  const meter    = document.getElementById('strengthMeter');
+  const segments = ['s1','s2','s3','s4'].map(id => document.getElementById(id));
+  const label    = document.getElementById('strengthLabel');
+
+  function scorePassword(p) {
+    let s = 0;
+    if (p.length >= 8)  s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
+    return s;
+  }
+
+  pwdInput.addEventListener('input', () => {
+    const val = pwdInput.value;
+    if (!val) { meter.style.display = 'none'; return; }
+    meter.style.display = 'block';
+    const score = scorePassword(val);
+    const cls   = score <= 1 ? 'weak' : score <= 2 ? 'medium' : 'strong';
+    const lbls  = ['Weak', 'Weak', 'Medium', 'Strong', 'Very strong'];
+    segments.forEach((seg, i) => {
+      seg.className = 'strength-segment' + (i < score ? ' active ' + cls : '');
+    });
+    label.textContent = lbls[score];
+    label.style.color = cls === 'weak' ? '#FDA4AF' : cls === 'medium' ? '#FCD34D' : '#6EE7B7';
+  });
+
+  /* Confirm match */
+  const confirmInput = document.getElementById('confirm_password');
+  const matchErr     = document.getElementById('matchError');
+  function checkMatch() {
+    if (confirmInput.value && confirmInput.value !== pwdInput.value) {
+      matchErr.style.display = 'flex';
+      confirmInput.classList.add('error');
+    } else {
+      matchErr.style.display = 'none';
+      confirmInput.classList.remove('error');
+    }
+  }
+  confirmInput.addEventListener('input', checkMatch);
+  pwdInput.addEventListener('input', checkMatch);
+
+  /* Loading state */
+  document.getElementById('registerForm').addEventListener('submit', function(e) {
+    if (pwdInput.value !== confirmInput.value) { e.preventDefault(); return; }
+    const btn = document.getElementById('registerBtn');
+    btn.classList.add('loading');
+    btn.querySelector('.btn-text').textContent = 'Creating account…';
+  });
+</script>
 </body>
-
 </html>

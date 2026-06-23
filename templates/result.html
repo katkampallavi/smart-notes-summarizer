@@ -1,81 +1,261 @@
 <!DOCTYPE html>
-
+<!--
+  Smart Notes Summarizer — result.html
+  Displays AI summary, keywords, stats, and download button.
+-->
 <html lang="en">
-
 <head>
-
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Summary Results</title>
-
-<link rel="stylesheet"
-      href="{{ url_for('static', filename='css/style.css') }}">
-
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Summary Result — Smart Notes Summarizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <script src="https://cdn.jsdelivr.net/npm/iconify-icon@2.1.0/dist/iconify-icon.min.js" defer></script>
 </head>
-
 <body>
 
-<div class="result-container">
+<button class="sidebar-toggle" id="sidebarToggle" aria-label="Open menu">
+  <iconify-icon icon="lucide:menu"></iconify-icon>
+</button>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+<div class="app-shell">
 
-<div class="page-header">
-
-    <h1>📚 Smart Notes Summary</h1>
-
-    <p>
-        AI-generated summary and extracted keywords
-    </p>
-
-</div>
-
-<div class="action-buttons">
-
-    <a href="/download" class="download-btn">
-        ⬇ Download PDF
-    </a>
-
-    <a href="/" class="home-btn">
-        🏠 Back to Home
-    </a>
-
-    <a href="/logout" class="logout-btn">
-        🚪 Logout
-    </a>
-
-</div>
-
-<div class="card">
-
-    <h2>📝 Summary</h2>
-
-    <p>
-        {{ summary }}
-    </p>
-
-</div>
-
-<div class="card">
-
-    <h2>📌 Keywords</h2>
-
-    <div class="keywords-container">
-
-        {% for keyword in keywords %}
-            <span class="keyword-tag">
-                {{ keyword }}
-            </span>
-        {% endfor %}
-
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">🧠</div>
+      <div class="logo-text">Smart Notes<span>AI Summarizer</span></div>
     </div>
 
+    <p class="nav-section-label">Main</p>
+    <nav>
+      <a href="{{ url_for('upload') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:upload-cloud"></iconify-icon></span>
+        Upload Document
+      </a>
+      <a href="{{ url_for('dashboard') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:layout-dashboard"></iconify-icon></span>
+        Dashboard
+      </a>
+    </nav>
+
+    <p class="nav-section-label" style="margin-top:20px;">Library</p>
+    <nav>
+      <a href="{{ url_for('history') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:history"></iconify-icon></span>
+        Summary History
+      </a>
+      <a href="{{ url_for('chatbot') }}" class="nav-link">
+        <span class="nav-icon"><iconify-icon icon="lucide:bot"></iconify-icon></span>
+        AI Study Assistant
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user">
+      <div class="user-avatar">
+        {{ current_user.username[0].upper() if current_user.is_authenticated else 'U' }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ current_user.username if current_user.is_authenticated else 'User' }}</div>
+        <div class="user-role">Free Plan</div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sidebar-logout" title="Log out">
+        <iconify-icon icon="lucide:log-out"></iconify-icon>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main-content fade-in">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-title">
+        <h1>Summary Result</h1>
+        <p>Your AI-generated summary is ready.</p>
+      </div>
+      <div class="topbar-actions">
+        <a href="{{ url_for('upload') }}" class="btn btn-secondary btn-sm">
+          <iconify-icon icon="lucide:plus"></iconify-icon>
+          New Upload
+        </a>
+        {% if summary %}
+        <a href="{{ url_for('download_pdf') }}" class="btn btn-primary btn-sm">
+          <iconify-icon icon="lucide:download"></iconify-icon>
+          Download PDF
+        </a>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if summary %}
+
+    <!-- ── Document Info Hero ── -->
+    <div class="result-hero mb-6">
+      <div class="flex items-center gap-4 mb-4" style="flex-wrap:wrap;">
+        <div class="stat-icon violet" style="width:52px;height:52px;font-size:1.4rem;flex-shrink:0;">
+          {% set ext = filename.split('.')[-1].lower() if filename else 'txt' %}
+          {% if ext == 'pdf' %}📕
+          {% elif ext == 'docx' %}📘
+          {% elif ext == 'pptx' %}📙
+          {% else %}📄{% endif %}
+        </div>
+        <div style="flex:1; min-width:0;">
+          <h2 style="font-size:1.1rem; font-weight:700; word-break:break-word;">
+            {{ filename if filename else 'Uploaded Document' }}
+          </h2>
+          <div class="flex items-center gap-2 mt-2" style="flex-wrap:wrap;">
+            <span class="badge badge-violet">
+              <iconify-icon icon="lucide:sparkles" style="margin-right:4px;"></iconify-icon>
+              AI Summarized
+            </span>
+            <span class="badge badge-mint">
+              <iconify-icon icon="lucide:check-circle" style="margin-right:4px;"></iconify-icon>
+              Complete
+            </span>
+            {% if ext %}
+            <span class="file-badge {{ ext }}">{{ ext.upper() }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <a href="{{ url_for('download_pdf') }}" class="btn btn-primary btn-sm" style="flex-shrink:0;">
+          <iconify-icon icon="lucide:download"></iconify-icon>
+          Download PDF
+        </a>
+      </div>
+
+      <!-- Summary Stats Row -->
+      <div class="result-stats">
+        <div class="result-stat">
+          <div class="result-stat-num">
+            {{ summary.split()|length if summary else 0 }}
+          </div>
+          <div class="result-stat-label">Words in Summary</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num">
+            {{ keywords|length if keywords else 0 }}
+          </div>
+          <div class="result-stat-label">Keywords Extracted</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num">
+            {{ summary.count('.') if summary else 0 }}
+          </div>
+          <div class="result-stat-label">Key Sentences</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num">~1m</div>
+          <div class="result-stat-label">Read Time</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Keywords ── -->
+    {% if keywords %}
+    <div class="card mb-6">
+      <div class="section-header" style="margin-bottom:16px;">
+        <h2>
+          <iconify-icon icon="lucide:tag" style="margin-right:8px; color:var(--violet-light);"></iconify-icon>
+          Extracted Keywords
+        </h2>
+        <span class="badge badge-violet">{{ keywords|length }} terms</span>
+      </div>
+      <div class="tags-wrap">
+        {% for keyword in keywords %}
+          <span class="tag">
+            <iconify-icon icon="lucide:hash" style="font-size:0.7rem;"></iconify-icon>
+            {{ keyword }}
+          </span>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── AI Summary ── -->
+    <div class="card">
+      <div class="section-header" style="margin-bottom:20px;">
+        <h2>
+          <iconify-icon icon="lucide:brain" style="margin-right:8px; color:var(--violet-light);"></iconify-icon>
+          AI-Generated Summary
+        </h2>
+        <button class="btn btn-ghost btn-sm" id="copySummary" title="Copy summary">
+          <iconify-icon icon="lucide:copy"></iconify-icon>
+          Copy
+        </button>
+      </div>
+
+      <div class="summary-body" id="summaryText">
+        {% if summary %}
+          {% for paragraph in summary.split('\n') %}
+            {% if paragraph.strip() %}
+              <p>{{ paragraph.strip() }}</p>
+            {% endif %}
+          {% endfor %}
+        {% else %}
+          <p style="color:var(--text-muted);">No summary content available.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Action Row ── -->
+    <div class="flex items-center gap-3 mt-6" style="flex-wrap:wrap;">
+      <a href="{{ url_for('download_pdf') }}" class="btn btn-primary">
+        <iconify-icon icon="lucide:file-down"></iconify-icon>
+        Download Summary PDF
+      </a>
+      <a href="{{ url_for('chatbot') }}" class="btn btn-secondary">
+        <iconify-icon icon="lucide:bot"></iconify-icon>
+        Ask AI Assistant
+      </a>
+      <a href="{{ url_for('upload') }}" class="btn btn-ghost">
+        <iconify-icon icon="lucide:rotate-ccw"></iconify-icon>
+        Summarize Another
+      </a>
+    </div>
+
+    {% else %}
+    <!-- Empty / error state -->
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>No Summary Found</h3>
+      <p>It looks like something went wrong. Try uploading your document again.</p>
+      <a href="{{ url_for('upload') }}" class="btn btn-primary mt-4">
+        <iconify-icon icon="lucide:upload"></iconify-icon>
+        Upload Document
+      </a>
+    </div>
+    {% endif %}
+
+  </main>
 </div>
 
+<script>
+  /* Sidebar */
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  document.getElementById('sidebarToggle').addEventListener('click', () => {
+    sidebar.classList.toggle('open'); overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open'); overlay.classList.remove('active');
+  });
 
-</div>
-
+  /* Copy summary */
+  const copyBtn = document.getElementById('copySummary');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      const text = document.getElementById('summaryText').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerHTML = '<iconify-icon icon="lucide:check"></iconify-icon> Copied!';
+        setTimeout(() => {
+          copyBtn.innerHTML = '<iconify-icon icon="lucide:copy"></iconify-icon> Copy';
+        }, 2000);
+      });
+    });
+  }
+</script>
 </body>
-
 </html>
