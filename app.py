@@ -4,6 +4,7 @@ import sqlite3
 import traceback
 from datetime import datetime
 from functools import wraps
+from create_db import create_database
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -25,6 +26,8 @@ from utils.pdf_export import generate_summary_pdf, generate_all_summaries_pdf
 # ---------------------------------------------------------------------------
 app = Flask(__name__)
 app.config.from_object(Config)
+
+create_database()
 Config.init_app(app)
 
 summarizer = Summarizer(max_sentences=12)
